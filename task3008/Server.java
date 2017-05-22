@@ -86,5 +86,42 @@ public class Server {
                 }
             }
         }
+
+        @Override
+        public void run() {
+            System.out.println("Установленно сообщение с удаленным адресом "+socket.getRemoteSocketAddress());
+            Connection connection = null;
+            String clientName = null;
+            try {
+                connection = new Connection(socket);
+                clientName = serverHandshake(connection);
+                sendBroadcastMessage(new Message(MessageType.USER_ADDED,clientName));
+                sendListOfUsers(connection,clientName);
+                serverMainLoop(connection,clientName);
+
+            } catch (IOException e) {
+                System.out.println("Произошла ошибка при обмене данными с удаленным адресом "+ socket.getRemoteSocketAddress());
+                try {
+                    if (connection!=null){
+                    connection.close();}
+                } catch (IOException e1) {
+                }
+            }
+            catch (ClassNotFoundException ex){
+                System.out.println("Произошла ошибка при обмене данными с удаленным адресом "+ socket.getRemoteSocketAddress());
+                try {
+                    if (connection!=null){
+                        connection.close();}
+                } catch (IOException e) {
+                }
+            }
+            finally {
+                if (clientName!=null){
+                    connectionMap.remove(clientName);
+                    sendBroadcastMessage(new Message(MessageType.USER_REMOVED,clientName));
+                }
+            }
+            System.out.println("Соединение с удаленным адресом закрыто.");
+        }
     }
 }
