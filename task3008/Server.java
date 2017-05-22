@@ -3,11 +3,14 @@ package com.javarush.task.task30.task3008;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by amalakhov on 22.05.2017.
  */
 public class Server {
+    private static Map<String,Connection> connectionMap = new ConcurrentHashMap<>();
     public static void main(String[] args) {
         int port=ConsoleHelper.readInt();
         ServerSocket serverSocket=null;
@@ -28,8 +31,17 @@ public class Server {
                 catch (IOException ex){}
             }
         }
+    }
 
-
+    public static void sendBroadcastMessage(Message message){
+        for (String key:connectionMap.keySet()){
+            try {
+                connectionMap.get(key).send(message);
+            }
+            catch (IOException e){
+                System.out.println("Не удалось отправить сообщение.");
+            }
+        }
     }
 
     private static class Handler extends Thread{
