@@ -101,21 +101,16 @@ public class Server {
 
             } catch (IOException e) {
                 System.out.println("Произошла ошибка при обмене данными с удаленным адресом "+ socket.getRemoteSocketAddress());
-                try {
-                    if (connection!=null){
-                    connection.close();}
-                } catch (IOException e1) {
-                }
             }
             catch (ClassNotFoundException ex){
                 System.out.println("Произошла ошибка при обмене данными с удаленным адресом "+ socket.getRemoteSocketAddress());
+            }
+            finally {
                 try {
                     if (connection!=null){
                         connection.close();}
                 } catch (IOException e) {
                 }
-            }
-            finally {
                 if (clientName!=null){
                     connectionMap.remove(clientName);
                     sendBroadcastMessage(new Message(MessageType.USER_REMOVED,clientName));
