@@ -83,6 +83,24 @@ public class Client {
     }
 
     public class SocketThread extends Thread{
+        protected void processIncomingMessage(String message){
+            System.out.println(message);
+        }
+
+        protected void informAboutAddingNewUser(String userName){
+            System.out.println("Приветствуем нового пользователя "+userName);
+        }
+
+        protected void informAboutDeletingNewUser(String userName){
+            System.out.println(userName + " покинул нас :(");
+        }
+
+        protected void notifyConnectionStatusChanged(boolean clientConnected){
+            Client.this.clientConnected=clientConnected;
+            synchronized (Client.this){
+                Client.this.notify();
+            }
+        }
 
     }
 }
