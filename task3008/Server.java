@@ -12,13 +12,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Server {
     private static Map<String,Connection> connectionMap = new ConcurrentHashMap<>();
     public static void main(String[] args) {
+        System.out.println("Введите номер порта сервера: ");
         int port=ConsoleHelper.readInt();
         ServerSocket serverSocket=null;
         try {
             serverSocket=new ServerSocket(port);
             System.out.println("Сервер запущен.");
             do{
-                new Handler(serverSocket.accept()).start();
+                new Handler(serverSocket.accept()).start(); // lunching server and listen for client(s)
             }
             while (true);
         }

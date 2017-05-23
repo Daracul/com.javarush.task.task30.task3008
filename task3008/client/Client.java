@@ -6,6 +6,9 @@ import com.javarush.task.task30.task3008.Message;
 import com.javarush.task.task30.task3008.MessageType;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Created by amalakhov on 23.05.2017.
@@ -103,33 +106,48 @@ public class Client {
         }
 
         protected void clientHandshake() throws IOException, ClassNotFoundException{
-            while (true){
-                Message receivedMessage = connection.receive();
-                if (receivedMessage.getType()==MessageType.NAME_REQUEST){
-                        connection.send(new Message(MessageType.USER_NAME,getUserName()));}
-                else if (receivedMessage.getType()==MessageType.NAME_ACCEPTED){
+                while (true) {
+                    Message receivedMessage = connection.receive();
+                    if (receivedMessage.getType() == MessageType.NAME_REQUEST) {
+                        connection.send(new Message(MessageType.USER_NAME, getUserName()));
+                    } else if (receivedMessage.getType() == MessageType.NAME_ACCEPTED) {
                         notifyConnectionStatusChanged(true);
-                        return;}
-                else throw new IOException("Unexpected MessageType");
+                        return;
+                    } else throw new IOException("Unexpected MessageType");
                 }
-            }
+        }
 
         protected void clientMainLoop() throws IOException, ClassNotFoundException{
-            while (true){
-                Message receivedMessage = connection.receive();
-                if (receivedMessage.getType()==MessageType.TEXT){
+                while (true) {
+                    Message receivedMessage = connection.receive();
+                    if (receivedMessage.getType() == MessageType.TEXT) {
                         processIncomingMessage(receivedMessage.getData());
+                    } else if (receivedMessage.getType() == MessageType.USER_ADDED) {
+                        informAboutAddingNewUser(receivedMessage.getData());
+                    } else if (receivedMessage.getType() == MessageType.USER_REMOVED) {
+                        informAboutDeletingNewUser(receivedMessage.getData());
+                    } else throw new IOException("Unexpected MessageType");
                 }
-                else if (receivedMessage.getType()==MessageType.USER_ADDED){
-                        informAboutAddingNewUser(receivedMessage.getData());}
+        }
 
-                else if (receivedMessage.getType()==MessageType.USER_REMOVED){
-                        informAboutDeletingNewUser(receivedMessage.getData());}
-
-                else throw new IOException("Unexpected MessageType");
-                }
+        @Override
+        public void run() {
+            try {
+                String inetAddress = getServerAddress();  //getting server ip address
+                int port = getServerPort();
+                Socket socket = new Socket(inetAddress, port);
+                connection = new Connection(socket);
+                clientHandshake();
+                clientMainLoop();
             }
-
-
+            catch (IOException e){
+                e.printStackTrace();
+                notifyConnectionStatusChanged(false);
+            }
+            catch (ClassNotFoundException e){
+                e.printStackTrace();
+                notifyConnectionStatusChanged(false);
+            }
+        }
     }
 }
